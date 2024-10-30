@@ -40,6 +40,58 @@ def launch_request_handler(handler_input: HandlerInput):
     speech_text = "Bienvenido a la Skill de Notion para Alexa. ¿En qué puedo ayudarte?"
     return handler_input.response_builder.speak(speech_text).set_should_end_session(False).response
 
+@sb.request_handler(can_handle_func=lambda input: input.request_envelope.request.intent.name == "CrearPaginaIntent")
+def crear_pagina_handler(handler_input: HandlerInput):
+    """
+    Maneja la intención de crear una nueva página en Notion.
+    Esta función se invoca cuando el usuario habla con Alexa y solicita crear una nueva página en Notion utilizando una frase adecuada.
+
+    Proceso de interacción:
+    1. El usuario se dirige a Alexa y dice una frase que activa la intención de creación de página. Por ejemplo:
+       - "Alexa, crea una página llamada [Título de la nueva página]."
+       - "Alexa, añade una nueva página titulada [Título de la nueva página]."
+    2. Alexa reconoce la solicitud y activa la intención CrearPaginaIntent.
+    3. Se envía una solicitud a la API de Notion para crear la página en la base de datos especificada.
+    5. Una vez que la página es creada, Alexa responde al usuario con un mensaje confirmando que la nueva página ha sido creada con éxito.
+
+    """
+    try:
+        # Extracción del título de la nueva página desde la solicitud
+        titulo = handler_input.request_envelope.request.intent.slots["titulo"].value
+        data = {
+            # Hay que ajustar el ID de la BD
+            # Desde luego que la base de datos es una base
+            # de datos de Notion, es decir, una colección de páginas
+
+            # Si tenemos la URL de la BD
+            # https://www.notion.so/workspace_name/Proyectos-abcde7872783782
+            # el ID entonces es: abcde7872783782
+            "parent": {"database_id": "-"},
+            "properties": {
+                "title": {
+                    "title": [
+                        {
+                            "type": "text",
+                            "text": {"content": titulo}
+                        }
+                    ]
+                }
+            }
+        }
+        # IMPORTANTE
+        # URL para crear una nueva página en Notion
+        url = "https://api.notion.com/v1/pages"
+        response = requests.post(url, headers=HEADERS, json=data)
+        response.raise_for_status()
+        page_data = response.json()
+        # La página fue creada
+        speech_text = f"Se ha creado la página con ID {page_data['id']}."
+    except requests.exceptions.HTTPError:
+        speech_text = "No pude crear la página en Notion. Asegúrate de tener los permisos necesarios."
+    except Exception:
+        speech_text = "Hubo un error inesperado al crear la página. Intenta nuevamente."
+    return handler_input.response_builder.speak(speech_text).response
+
 @sb.request_handler(can_handle_func=lambda input: input.request_envelope.request.intent.name == "ConsultarPaginaIntent")
 def consultar_pagina_handler(handler_input: HandlerInput):
     """
@@ -77,57 +129,10 @@ def consultar_pagina_handler(handler_input: HandlerInput):
         speech_text = "Ocurrió un error inesperado al consultar la página."
     return handler_input.response_builder.speak(speech_text).response
 
-@sb.request_handler(can_handle_func=lambda input: input.request_envelope.request.intent.name == "CrearPaginaIntent")
-def crear_pagina_handler(handler_input: HandlerInput):
-    """
-    Maneja la intención de crear una nueva página en Notion.
-    Esta función se invoca cuando el usuario habla con Alexa y solicita crear una nueva página en Notion utilizando una frase adecuada.
-
-    Proceso de interacción:
-    1. El usuario se dirige a Alexa y dice una frase que activa la intención de creación de página. Por ejemplo:
-       - "Alexa, crea una página llamada [Título de la nueva página]."
-       - "Alexa, añade una nueva página titulada [Título de la nueva página]."
-    2. Alexa reconoce la solicitud y activa la intención CrearPaginaIntent.
-    3. Se envía una solicitud a la API de Notion para crear la página en la base de datos especificada.
-    5. Una vez que la página es creada, Alexa responde al usuario con un mensaje confirmando que la nueva página ha sido creada con éxito.
-
-    """
-    try:
-        # Extracción del título de la nueva página desde la solicitud
-        titulo = handler_input.request_envelope.request.intent.slots["titulo"].value
-        data = {
-            # Hay que ajustar el ID de la BD
-            # Desde luego que la base de datos es una base
-            # de datos de Notion, es decir, una colección de páginas
-
-            # Si tenemos la URL de la BD
-            # https://www.notion.so/workspace_name/Proyectos-abcde
-            # el ID entonces es: abcde
-            "parent": {"database_id": "-"},
-            "properties": {
-                "title": {
-                    "title": [
-                        {
-                            "type": "text",
-                            "text": {"content": titulo}
-                        }
-                    ]
-                }
-            }
-        }
-        # IMPORTANTE
-        # URL para crear una nueva página en Notion
-        url = "https://api.notion.com/v1/pages"
-        response = requests.post(url, headers=HEADERS, json=data)
-        response.raise_for_status()
-        page_data = response.json()
-        # La página fue creada
-        speech_text = f"Se ha creado la página con ID {page_data['id']}."
-    except requests.exceptions.HTTPError:
-        speech_text = "No pude crear la página en Notion. Asegúrate de tener los permisos necesarios."
-    except Exception:
-        speech_text = "Hubo un error inesperado al crear la página. Intenta nuevamente."
-    return handler_input.response_builder.speak(speech_text).response
+# La función para manejar la asignación de tareas debería en cuestión 
+# verificar que los parámetros del discurso del usuario (quien asigna)
+# sean los correctos para una tarea dada, es decir, delimitamos como se asignan las tareas
+# e.g. "Alexa agrega la tarea <<tarea_1>> al <<usuario_1>> como fecha limite <<fecha_1>>"
 
 @sb.global_request_handler(can_handle_func=lambda input: True)
 def default_handler(handler_input: HandlerInput):
