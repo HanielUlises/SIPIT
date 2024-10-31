@@ -1,0 +1,60 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "sistema sipit",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "ConsultarPaginaIntent",
+                    "slots": [
+                        {
+                            "name": "paginaid",
+                            "type": "AMAZON.AlphaNumeric"
+                        }
+                    ],
+                    "samples": [
+                        "Muéstrame la información de la página {paginaid}",
+                        "Dime qué dice la página {paginaid}",
+                        "Cuál es el título de la página {paginaid}",
+                        "Consulta la página con identificacion {paginaid}",
+                        "consulta la asignacion {paginaid}"
+                    ]
+                },
+                {
+                    "name": "CrearPaginaIntent",
+                    "slots": [
+                        {
+                            "name": "title",
+                            "type": "AMAZON.AlphaNumeric"
+                        }
+                    ],
+                    "samples": [
+                        " añade una nueva página titulada {title}",
+                        "crea una página llamada {title}",
+                        "crea una asignacion llamada {title}"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}
