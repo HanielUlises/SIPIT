@@ -614,6 +614,8 @@ class CrearPaginaIntentHandler(AbstractRequestHandler):
         return is_intent_name("CrearPaginaIntent")(handler_input)
 
     def handle(self, handler_input):
+        # Slot: Nombre
+
         logger.info("In CrearPaginaIntentHandler")
         try:
             titulo = handler_input.request_envelope.request.intent.slots["title"].value
@@ -729,6 +731,8 @@ sb.add_request_handler(ConsultarTareasHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
 sb.add_request_handler(ExitIntentHandler())
+
+
 sb.add_global_request_interceptor(RequestLogger())
 sb.add_global_response_interceptor(ResponseLogger())
 
