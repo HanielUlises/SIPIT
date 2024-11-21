@@ -28,9 +28,9 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 # Configuración constante
-TOKEN_NOTION = ""
-ID_DATABASE = ""
-URL_CREACION = ""
+TOKEN_NOTION = "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"
+ID_DATABASE = "1232595bac6f812d8674d1f4e4012af9"
+URL_CREACION = "https://api.notion.com/v1/pages"
 CABECERA = {
     "Authorization": f"Bearer {TOKEN_NOTION}",
     "Content-Type": "application/json",
@@ -56,7 +56,7 @@ TITULAR = {
 
 ETIQUETAS = [{"name": "Web"}, {"name": "Mejora"}]
 ESTADO = "En curso"
-ID_PROYECTO = ""
+ID_PROYECTO = "1232595b-ac6f-816c-9240-dae9cbd7dfd8"
 
 
 #Comandos de Notion
