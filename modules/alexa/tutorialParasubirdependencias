@@ -1,0 +1,18 @@
+Algunas dependencias ya las tiende AWS, sin embrago, si hay unas que no estan, favor de agregarlas al archivo .txt de requirements.
+Simplemente en una linea nueva escribes la libreria que se necesita y ya. Después, es necesario que lo installes dentro de una carpeta nueva.
+Esta carpeta yo la llamo "skill_env", hazla dentro de modules/alexa/{skill_env}. Una vez hecha la carpeta, neccesitara que instales las dependencias con el siguiente comando:
+
+```bash
+pip install -r requirements.txt -t skill_env
+```
+Ahora, ya tienes todas las dependencias necesarias para tu proyecto. Si quieres agregar más, simplemente escribe el nombre de la libreria en el archivo requirements.txt y vuelve a correr el comando anterior.
+
+Tambien, asegurate de copiar el archivo de lambda_function.py dentro de la carpeta skill_env. Esto es necesario para que AWS pueda correr el código.
+Se hace de siguiente manera: 
+
+```bash
+cp -r lambda_function.py skill_env/
+```
+
+Una vez hecho esto, tienes que comprimir LOS CONTENIDOS DE LA CARPETA skill_env, NO la carpeta en si. 
+Al final, sube el archivo comprimido a AWS y listo.
