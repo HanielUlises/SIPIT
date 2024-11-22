@@ -37,7 +37,7 @@ NOTION_API_TOKEN = "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"
 ID_DATABASE = "1232595bac6f812d8674d1f4e4012af9"
 URL_CREACION = "https://api.notion.com/v1/pages"
 CABECERA = {
-    "Authorization": f"Bearer {TOKEN_NOTION}",
+    "Authorization": f"Bearer {NOTION_API_TOKEN}",
     "Content-Type": "application/json",
     "Notion-Version": "2022-02-22"
 }
