@@ -37,7 +37,7 @@ NOTION_API_TOKEN = "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"
 ID_DATABASE = "1232595bac6f812d8674d1f4e4012af9"
 URL_CREACION = "https://api.notion.com/v1/pages"
 CABECERA = {
-    "Authorization": f"Bearer {TOKEN_NOTION}",
+    "Authorization": f"Bearer {NOTION_API_TOKEN}",
     "Content-Type": "application/json",
     "Notion-Version": "2022-02-22"
 }
@@ -349,7 +349,7 @@ class ConsultarPaginaIntentHandler(AbstractRequestHandler):
         try:
             pagina_id = handler_input.request_envelope.request.intent.slots["paginaid"].value
             url = f"https://api.notion.com/v1/pages/{pagina_id}"
-            response = requests.get(url, headers=HEADERS)
+            response = requests.get(url, headers=CABECERA)
             response.raise_for_status()
             page_data = response.json()
             speech_text = f"La página con ID {pagina_id} tiene el título: {page_data['properties']['title']['title'][0]['text']['content']}."
@@ -391,7 +391,7 @@ class CrearPaginaIntentHandler(AbstractRequestHandler):
                 }
             }
             url = "https://api.notion.com/v1/pages"
-            response = requests.post(url, headers=HEADERS, json=data)
+            response = requests.post(url, headers=CABECERA, json=data)
             response.raise_for_status()
             page_data = response.json()
             speech_text = f"Se ha creado la página con ID {page_data['id']}."
