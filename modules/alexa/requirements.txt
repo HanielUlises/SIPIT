@@ -1,2 +1,4 @@
 ask-sdk-core
 langchain-groq
+pydantic
+boto3
