@@ -61,6 +61,247 @@ TITULAR = {
 
 # Comandos de Notion
 
+def CrearTarea(texto):
+    # Definir el prompt para extraer valores del texto de entrada
+    promptc = ChatPromptTemplate.from_template("""
+    Extrae el nombre de la tarea, la fecha de inicio, la fecha de conclusión, el nivel de prioridad y la descripción del siguiente comando:
+    {texto}
+    y que los valores tengan este formato: nombre="valor", fecha_inicio="YYYY-MM-DD", fecha_fin="YYYY-MM-DD", prioridad="valor", resumen="valor".
+    Devuelve estos datos como un diccionario JSON con las claves "nombre", "fecha_inicio", "fecha_fin", "prioridad" y "resumen".
+    Unicamente devuelve el JSON. Sin comentarios ni explicación.
+    """)
+
+    # Extraer los datos necesarios con el modelo
+    chainc = promptc | model | StrOutputParser()
+    resultado_prompt = chainc.invoke({"texto": texto})
+    datos_tarea = json.loads(resultado_prompt)
+
+    # Definir los datos de la nueva entrada combinando los parámetros extraídos y las constantes
+    nueva_entrada = {
+        "parent": {"database_id": ID_DATABASE},
+        "properties": {
+            "Nombre de la tarea": {
+                "title": [{"text": {"content": datos_tarea["nombre"]}}]
+            },
+            "Etiquetas": {
+                "multi_select": ETIQUETAS
+            },
+            "Titular": TITULAR,
+            "Estado": {
+                "status": {"name": ESTADO}
+            },
+            "Fecha": {
+                "date": {
+                    "start": datos_tarea["fecha_inicio"],
+                    "end": datos_tarea["fecha_fin"]
+                }
+            },
+            "Proyecto": {
+                "id": "notion%3A%2F%2Ftasks%2Ftask_to_project_relation",
+                "type": "relation",
+                "relation": [{"id": ID_PROYECTO}]
+            },
+            "Prioridad": {
+                "select": {"name": datos_tarea["prioridad"]}
+            },
+            "Resumen": {
+                "rich_text": [{"text": {"content": datos_tarea["resumen"]}}]
+            }
+        }
+    }
+
+    # Realizar la solicitud POST a la API de Notion para crear una nueva entrada
+    respuesta = requests.post(URL_CREACION, headers=CABECERA, data=json.dumps(nueva_entrada))
+
+    # Verificar si la solicitud fue exitosa y mostrar la respuesta
+    if respuesta.status_code == 200:
+        print("La tarea se creó con éxito en Notion.")
+        #print(json.dumps(respuesta.json(), sort_keys=False, indent=4))
+    else:
+        print(f"Error {respuesta.status_code}: No se pudo crear la tarea.")
+        print(json.dumps(respuesta.json(), sort_keys=False, indent=4))
+
+# Ejemplo de uso
+#texto = """SIPIT, crea una tarea con nombre "FUNCION MAESTRA", que tenga fecha de inicio "01-11-2024" y con una fecha de conclusión "15-11-2024",
+#con un nivel de prioridad "Alta", con la descripción "Revisar y ajustar los puntos críticos del proyecto"."""
+#CrearTarea(texto)
+
+def CrearProyecto(texto):
+    # Definir el prompt para extraer valores del texto de entrada
+    promptc = ChatPromptTemplate.from_template("""
+    Extrae el nombre del proyecto, la fecha de inicio, la fecha de conclusión y el nivel de prioridad del siguiente comando:
+    {texto}
+    y que los valores tengan este formato: nombre="valor", fecha_inicio="YYYY-MM-DD", fecha_fin="YYYY-MM-DD", prioridad="valor".
+    Devuelve estos datos como un diccionario JSON con las claves "nombre", "fecha_inicio", "fecha_fin", "prioridad" y "resumen".
+    Unicamente devuelve el JSON. Sin comentarios ni explicación.
+    """)
+
+    # Extraer los datos necesarios con el modelo
+    chainc = promptc | model | StrOutputParser()
+    resultado_prompt = chainc.invoke({"texto": texto})
+    print(resultado_prompt)
+    datos_tarea = json.loads(resultado_prompt)
+
+    # Definir los datos de la nueva entrada combinando los parámetros extraídos y las constantes
+    nueva_entrada = {
+        "parent": {"database_id": ID_DATABASE},
+        "properties": {
+            "Nombre del proyecto": {
+                "title": [{"text": {"content": datos_tarea["nombre"]}}]
+            },
+            "Titular": TITULAR,
+            "Estado": {
+                "status": {"name": ESTADO}
+            },
+            "Fechas": {
+                "date": {
+                    "start": datos_tarea["fecha_inicio"],
+                    "end": datos_tarea["fecha_fin"]
+                }
+            },
+            "Prioridad": {
+                "select": {"name": datos_tarea["prioridad"]}
+            }
+        }
+    }
+
+    # Realizar la solicitud POST a la API de Notion para crear una nueva entrada
+    respuesta = requests.post(URL_CREACION, headers=CABECERA, data=json.dumps(nueva_entrada))
+
+    # Verificar si la solicitud fue exitosa y mostrar la respuesta
+    if respuesta.status_code == 200:
+        print("El proyecto se creó con éxito en Notion.")
+        #print(json.dumps(respuesta.json(), sort_keys=False, indent=4))
+    else:
+        print(f"Error {respuesta.status_code}: No se pudo crear la tarea.")
+        print(json.dumps(respuesta.json(), sort_keys=False, indent=4))
+
+# Ejemplo de uso
+#texto = """SIPIT, crea un proyecto con nombre "YUJU", que tenga fecha de inicio "01-11-2024" y con una fecha de conclusión "15-11-2024",
+#con un nivel de prioridad "Low""."""
+#CrearProyecto(texto)
+
+# Función principal para crear una nueva tarea en Notion
+def CrearSprint(texto):
+    # Definir el prompt para extraer valores del texto de entrada
+    promptc = ChatPromptTemplate.from_template("""
+    Extrae el nombre del sprint, la fecha de inicio y la fecha de conclusión del siguiente comando:
+    {texto}
+    y que los valores tengan este formato: nombre="valor", fecha_inicio="YYYY-MM-DD", fecha_fin="YYYY-MM-DD".
+    Devuelve estos datos como un diccionario JSON con las claves "nombre", "fecha_inicio" y "fecha_fin".
+    Unicamente devuelve el JSON. Sin comentarios ni explicación.
+    """)
+
+    # Extraer los datos necesarios con el modelo
+    chainc = promptc | model | StrOutputParser()
+    resultado_prompt = chainc.invoke({"texto": texto})
+    print(resultado_prompt)
+    datos_tarea = json.loads(resultado_prompt)
+
+    # Definir los datos de la nueva entrada combinando los parámetros extraídos y las constantes
+    nueva_entrada = {
+        "parent": {"database_id": ID_DATABASE},
+        "properties": {
+            "Nombre del Sprint": {
+                "title": [{"text": {"content": datos_tarea["nombre"]}}]
+            },
+            "Fechas": {
+                "date": {
+                    "start": datos_tarea["fecha_inicio"],
+                    "end": datos_tarea["fecha_fin"]
+                }
+            }
+        }
+    }
+
+    # Realizar la solicitud POST a la API de Notion para crear una nueva entrada
+    respuesta = requests.post(URL_CREACION, headers=CABECERA, data=json.dumps(nueva_entrada))
+
+    # Verificar si la solicitud fue exitosa y mostrar la respuesta
+    if respuesta.status_code == 200:
+        print("El SPRINT se creó con éxito en Notion.")
+        #print(json.dumps(respuesta.json(), sort_keys=False, indent=4))
+    else:
+        print(f"Error {respuesta.status_code}: No se pudo crear la tarea.")
+        print(json.dumps(respuesta.json(), sort_keys=False, indent=4))
+
+# Ejemplo de uso
+#texto = """SIPIT, crea un Sprint con nombre "Sprint 5", que tenga fecha de inicio "01-11-2024" y con una fecha de conclusión "15-11-2024"."""
+#CrearSprint(texto)
+
+
+# Función principal para consultar y procesar tareas
+def ConsultarTareas(texto):
+    # Define el prompt para extraer valores del texto de entrada
+    prompt_extract = ChatPromptTemplate.from_template(
+        """
+        Extrae la fecha con formato YYYY-MM-DD y el nivel de prioridad del comando:
+        {texto}
+        Devuelve estos datos como un diccionario JSON con las claves "prioridad", "fecha_inicio".
+        Unicamente devuelve el JSON. Sin comentarios ni explicación.
+        """
+    )
+
+    # Genera código con valores extraídos
+    valores_extraidos = prompt_extract | model | StrOutputParser()
+    codigo = valores_extraidos.invoke({"texto": texto})
+    datos_consulta = json.loads(codigo)
+
+    # Configuración para la consulta a la API de Notion
+    token_notion = "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"
+    id_database = "1232595bac6f812d8674d1f4e4012af9"
+
+    # Obtener datos desde Notion
+    url_pregunta = f"https://api.notion.com/v1/databases/{id_database}/query"
+    cabecera = {
+        "Authorization": f"Bearer {token_notion}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-02-22"
+    }
+
+    busqueda = {
+        "page_size": 10,
+        "filter": {
+            "and": [
+                {
+                    "property": "Prioridad",
+                    "select": {
+                        "equals": datos_consulta["prioridad"]
+                    }
+                },
+                {
+                    "property": "Fecha",
+                    "date": {
+                        "on_or_after": datos_consulta["fecha_inicio"]
+                    }
+                }
+            ]
+        }
+    }
+
+    respuesta = requests.post(url_pregunta, headers=cabecera, data=json.dumps(busqueda))
+    if respuesta.status_code == 200:
+        print("Datos obtenidos con éxito")
+    else:
+        print(f"Error {respuesta.status_code}: No se pudo obtener los datos")
+
+    datos = respuesta.json()
+
+    # Guardar datos en archivo JSON (opcional)
+    with open("db.json", "w") as fd:
+        json.dump(datos, fd, sort_keys=False, indent=4)
+    print("Aqui")
+    # Definir el prompt para interpretar las tareas
+    prompt_interpretar = ChatPromptTemplate.from_template(
+        """
+        interpreta: {text}. Solo dime el contenido que esta en la propiedad tittle de cada tarea.
+        """
+    )
+    chain_interpretar = prompt_interpretar | model | StrOutputParser()
+    interpretacion = chain_interpretar.invoke({"text": datos})
+
+    return interpretacion
+
 # Ejemplo de uso
 #texto = "SIPIT, resume las tareas de el dia 01-11-2024 y con prioridad Alta"
 #resultado = ConsultarTareas(texto)
@@ -349,7 +590,7 @@ class ConsultarPaginaIntentHandler(AbstractRequestHandler):
         try:
             pagina_id = handler_input.request_envelope.request.intent.slots["paginaid"].value
             url = f"https://api.notion.com/v1/pages/{pagina_id}"
-            response = requests.get(url, headers=CABECERA)
+            response = requests.get(url, headers=HEADERS)
             response.raise_for_status()
             page_data = response.json()
             speech_text = f"La página con ID {pagina_id} tiene el título: {page_data['properties']['title']['title'][0]['text']['content']}."
@@ -391,7 +632,7 @@ class CrearPaginaIntentHandler(AbstractRequestHandler):
                 }
             }
             url = "https://api.notion.com/v1/pages"
-            response = requests.post(url, headers=CABECERA, json=data)
+            response = requests.post(url, headers=HEADERS, json=data)
             response.raise_for_status()
             page_data = response.json()
             speech_text = f"Se ha creado la página con ID {page_data['id']}."
@@ -477,6 +718,67 @@ class ConsultarTareasIntentHandler(AbstractRequestHandler):
         speech_text = f"Las tareas consultadas son: {resultado}"  # Modifica según tu lógica de respuesta
         return handler_input.response_builder.speak(speech_text).response
 
+# Speech To Text ()
+class TranscribeIntentHandler(AbstractRequestHandler):
+    """Maneja TranscribeIntent."""
+    def can_handle(self, handler_input):
+        return is_intent_name("TranscribeIntent")(handler_input)
+
+    def handle(self, handler_input):
+        global transcriptions
+
+        user_input = handler_input.request_envelope.request.intent.slots["UserInput"].value
+        transcriptions.append(user_input)
+
+        word_count = len(" ".join(transcriptions).split())
+        if word_count >= 1000:
+            speak_output = (
+                "Has alcanzado el límite de 1000 palabras. Por favor, di 'Genera la minuta' para obtener la minuta."
+            )
+        else:
+            speak_output = f"He registrado tu minuta. Hasta ahora tienes {word_count} palabras. ¿Algo más?"
+        
+        return (
+            handler_input.response_builder
+            .speak(speak_output)
+            .reprompt("¿Algo más que desees dictar?")
+            .response
+        )
+
+
+class GenerateSummaryIntentHandler(AbstractRequestHandler):
+    """Maneja GenerateSummaryIntent."""
+    def can_handle(self, handler_input):
+        return is_intent_name("GenerateSummaryIntent")(handler_input)
+
+    def handle(self, handler_input):
+        global transcriptions
+        # Recuperamos la información
+        if not transcriptions:
+            speak_output = "No has dictado nada. Por favor, di algo para transcribir."
+            return handler_input.response_builder.speak(speak_output).response
+        # Tratamos la información y la guardamos
+        full_text = " ".join(transcriptions)
+        transcriptions = []
+
+        file_path = "/tmp/transcription.txt"
+
+        try:
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.write(full_text)
+            logger.info(f"Archivo guardado en: {file_path}")
+            speak_output = "El archivo con tu resumen ha sido generado. Puedes revisarlo en el servidor."
+        except Exception as e:
+            logger.error(f"Error al guardar el archivo: {e}")
+            speak_output = "Hubo un problema al generar el archivo. Intenta nuevamente."
+
+        return (
+            handler_input.response_builder
+            .speak(speak_output)
+            .with_simple_card("Resumen Generado", f"Archivo guardado en: {file_path}")
+            .response
+        )
+
 # Configuración de Skill Builder y registro de handlers e interceptores
 sb = SkillBuilder()
 sb.add_request_handler(LaunchRequestHandler())
@@ -489,7 +791,8 @@ sb.add_request_handler(ConsultarTareasHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
 sb.add_request_handler(ExitIntentHandler())
-
+sb.add_request_handler(TranscribeIntentHandler())
+sb.add_request_handler(GenerateSummaryIntentHandler())
 
 sb.add_global_request_interceptor(RequestLogger())
 sb.add_global_response_interceptor(ResponseLogger())
