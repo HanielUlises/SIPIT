@@ -18,8 +18,6 @@ from s3_bucket import subirAS3
 
 from Notion import comandosNotion
 cN = comandosNotion()
-from Notion import comandosNotion
-cN = comandosNotion()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
