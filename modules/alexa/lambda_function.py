@@ -604,31 +604,7 @@ class TranscribeIntentHandler(AbstractRequestHandler):
 
 class GenerateSummaryIntentHandler(AbstractRequestHandler):
     """Maneja GenerateSummaryIntent."""
-        global transcriptions
-
-        user_input = handler_input.request_envelope.request.intent.slots["UserInput"].value
-        transcriptions.append(user_input)
-
-        word_count = len(" ".join(transcriptions).split())
-        if word_count >= 1000:
-            speak_output = (
-                "Has alcanzado el límite de 1000 palabras. Por favor, di 'Genera la minuta' para obtener la minuta."
-            )
-        else:
-            speak_output = f"He registrado tu minuta. Hasta ahora tienes {word_count} palabras. ¿Algo más?"
-        
-        return (
-            handler_input.response_builder
-            .speak(speak_output)
-            .reprompt("¿Algo más que desees dictar?")
-            .response
-        )
-
-
-class GenerateSummaryIntentHandler(AbstractRequestHandler):
-    """Maneja GenerateSummaryIntent."""
     def can_handle(self, handler_input):
-        return is_intent_name("GenerateSummaryIntent")(handler_input)
         return is_intent_name("GenerateSummaryIntent")(handler_input)
 
     def handle(self, handler_input):
@@ -641,7 +617,7 @@ class GenerateSummaryIntentHandler(AbstractRequestHandler):
         full_text = " ".join(transcriptions)
         transcriptions = []
 
-        file_path = "/trans/transcription.txt"
+        file_path = "/tmp/transcription.txt"
         nombre_bucket =  "sipit-transcriptions"
         llave_archivo = "transcriptions/transcription.txt"
 
