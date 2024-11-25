@@ -18,6 +18,8 @@ from s3_bucket import subirAS3
 
 from Notion import comandosNotion
 cN = comandosNotion()
+from Notion import comandosNotion
+cN = comandosNotion()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -61,9 +63,14 @@ class CrearTareaHandler(AbstractRequestHandler):
             respuesta = cN.CrearTarea(texto)
             
             # Verificar si la solicitud fue exitosa y mostrar la respuesta
+            respuesta = cN.CrearTarea(texto)
+            
+            # Verificar si la solicitud fue exitosa y mostrar la respuesta
             if respuesta.status_code == 200:
                 speech_text = "El proyecto se creó con éxito en Notion."
+                speech_text = "El proyecto se creó con éxito en Notion."
             else:
+                speech_text = f"Error {respuesta.status_code}: No se pudo crear el proyecto."
                 speech_text = f"Error {respuesta.status_code}: No se pudo crear el proyecto."
                 
         except Exception as e:
@@ -95,6 +102,7 @@ class CrearProyectoHandler(AbstractRequestHandler):
 
         return handler_input.response_builder.speak(speech_text).response
     
+    
 class CrearSprintHandler(AbstractRequestHandler):
     """Handler para crear sprints en Notion."""
     def can_handle(self, handler_input):
@@ -104,6 +112,7 @@ class CrearSprintHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.CrearSprint(texto)
             respuesta = cN.CrearSprint(texto)
             
             if respuesta.status_code == 200:
@@ -138,6 +147,27 @@ class CrearMinutaHandler(AbstractRequestHandler):
             speech_text = "Hubo un error al crear la minuta. Por favor, inténtalo de nuevo."
 
         return handler_input.response_builder.speak(speech_text).response
+class CrearMinutaHandler(AbstractRequestHandler):
+    """Handler para crear minutas en Notion."""
+    def can_handle(self, handler_input):
+        return (is_intent_name("CrearMinutaIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+
+    def handle(self, handler_input):
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.CrearMinuta(texto)
+            
+            if respuesta.status_code == 200:
+                speech_text = "La minuta se creó con éxito en Notion."
+            else:
+                speech_text = f"Error {respuesta.status_code}: No se pudo crear la minuta."
+                
+        except Exception as e:
+            logger.error(f"Error al crear la minuta: {str(e)}")
+            speech_text = "Hubo un error al crear la minuta. Por favor, inténtalo de nuevo."
+
+        return handler_input.response_builder.speak(speech_text).response
 
 class ConsultarTareasHandler(AbstractRequestHandler):
     """Handler para consultar tareas en Notion."""
@@ -148,6 +178,126 @@ class ConsultarTareasHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.ConsultarTareas(texto)
+            
+            speech_text = respuesta
+            # Guardar datos en archivo JSON (opcional)
+            #with open("db.json", "w") as fd:
+            #    json.dump(datos, fd, sort_keys=False, indent=4)
+            #print("Aqui")
+            # Definir el prompt para interpretar las tareas
+                
+                
+        except Exception as e:
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
+        return handler_input.response_builder.speak(speech_text).response
+    
+class ConsultarProyectoHandler(AbstractRequestHandler):
+    """Handler para consultar proyectos en Notion."""
+    def can_handle(self, handler_input):
+        return (is_intent_name("ConsultarProyectoIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+
+    def handle(self, handler_input):
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.ConsultarProyecto(texto)
+            
+            speech_text = respuesta
+                
+        except Exception as e:
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
+        return handler_input.response_builder.speak(speech_text).response
+    
+class ConsultarSprintHandler(AbstractRequestHandler):
+    """Handler para consultar proyectos en Notion."""
+    def can_handle(self, handler_input):
+        return (is_intent_name("ConsultarSprintIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+
+    def handle(self, handler_input):
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.ConsultarSprint(texto)
+            
+            speech_text = respuesta
+                
+        except Exception as e:
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
+        return handler_input.response_builder.speak(speech_text).response
+    
+class ConsultarMinutaHandler(AbstractRequestHandler):
+    """Handler para consultar proyectos en Notion."""
+    def can_handle(self, handler_input):
+        return (is_intent_name("ConsultarSprintIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+
+    def handle(self, handler_input):
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.ConsultarMinuta(texto)
+            
+            speech_text = respuesta
+                
+        except Exception as e:
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
+        return handler_input.response_builder.speak(speech_text).response
+    
+class EliminarProyectoHandler(AbstractRequestHandler):
+    """Handler para eliminar proyectos en Notion."""
+    def can_handle(self, handler_input):
+        return (is_intent_name("EliminarProyectoIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+
+    def handle(self, handler_input):
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.EliminarProyecto(texto)
+            speech_text = respuesta
+                
+        except Exception as e:
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
+        return handler_input.response_builder.speak(speech_text).response
+    
+class EliminarTareaHandler(AbstractRequestHandler):
+    """Handler para eliminar proyectos en Notion."""
+    def can_handle(self, handler_input):
+        return (is_intent_name("EliminarTareaIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+
+    def handle(self, handler_input):
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.EliminarTarea(texto)
+            speech_text = respuesta
+                
+        except Exception as e:
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
+        return handler_input.response_builder.speak(speech_text).response
+    
+class EliminarMinutaHandler(AbstractRequestHandler):
+    """Handler para eliminar minuta en Notion."""
+    def can_handle(self, handler_input):
+        return (is_intent_name("EliminarMinutaIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+
+    def handle(self, handler_input):
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.EliminarMinuta(texto)
+            speech_text = respuesta
             respuesta = cN.ConsultarTareas(texto)
             
             speech_text = respuesta
@@ -317,6 +467,49 @@ class ActualizarTareaHandler(AbstractRequestHandler):
         return handler_input.response_builder.speak(speech_text).response
     
 
+    
+class EliminarSprintHandler(AbstractRequestHandler):
+    """Handler para eliminar sprint en Notion."""
+    def can_handle(self, handler_input):
+        return (is_intent_name("EliminarSprintIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+
+    def handle(self, handler_input):
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.EliminarSprint(texto)
+            speech_text = respuesta
+                
+        except Exception as e:
+            logger.error(f"Error al eliminar sprint: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
+        return handler_input.response_builder.speak(speech_text).response
+
+#este no lo prueben    
+class ActualizarTareaHandler(AbstractRequestHandler):
+    """Handler para crear minutas en Notion."""
+    def can_handle(self, handler_input):
+        return (is_intent_name("CrearMinutaIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+
+    def handle(self, handler_input):
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            respuesta = cN.ActualizarTarea(texto)
+            
+            if respuesta.status_code == 200:
+                speech_text = "La minuta se creó con éxito en Notion."
+            else:
+                speech_text = f"Error {respuesta.status_code}: No se pudo crear la minuta."
+                
+        except Exception as e:
+            logger.error(f"Error al crear la minuta: {str(e)}")
+            speech_text = "Hubo un error al crear la minuta. Por favor, inténtalo de nuevo."
+
+        return handler_input.response_builder.speak(speech_text).response
+    
+
 # Handlers de solicitud
 class LaunchRequestHandler(AbstractRequestHandler):
     """Handler para LaunchRequest de Alexa."""
@@ -381,7 +574,10 @@ class ResponseLogger(AbstractResponseInterceptor):
 #Handlers para comandos de notion
 class TranscribeIntentHandler(AbstractRequestHandler):
     """Maneja TranscribeIntent."""
+class TranscribeIntentHandler(AbstractRequestHandler):
+    """Maneja TranscribeIntent."""
     def can_handle(self, handler_input):
+        return is_intent_name("TranscribeIntent")(handler_input)
         return is_intent_name("TranscribeIntent")(handler_input)
 
     def handle(self, handler_input):
@@ -408,7 +604,31 @@ class TranscribeIntentHandler(AbstractRequestHandler):
 
 class GenerateSummaryIntentHandler(AbstractRequestHandler):
     """Maneja GenerateSummaryIntent."""
+        global transcriptions
+
+        user_input = handler_input.request_envelope.request.intent.slots["UserInput"].value
+        transcriptions.append(user_input)
+
+        word_count = len(" ".join(transcriptions).split())
+        if word_count >= 1000:
+            speak_output = (
+                "Has alcanzado el límite de 1000 palabras. Por favor, di 'Genera la minuta' para obtener la minuta."
+            )
+        else:
+            speak_output = f"He registrado tu minuta. Hasta ahora tienes {word_count} palabras. ¿Algo más?"
+        
+        return (
+            handler_input.response_builder
+            .speak(speak_output)
+            .reprompt("¿Algo más que desees dictar?")
+            .response
+        )
+
+
+class GenerateSummaryIntentHandler(AbstractRequestHandler):
+    """Maneja GenerateSummaryIntent."""
     def can_handle(self, handler_input):
+        return is_intent_name("GenerateSummaryIntent")(handler_input)
         return is_intent_name("GenerateSummaryIntent")(handler_input)
 
     def handle(self, handler_input):
@@ -458,6 +678,21 @@ sb.add_request_handler(ConsultarTareasHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
 sb.add_request_handler(ExitIntentHandler())
+sb.add_request_handler(TranscribeIntentHandler())
+sb.add_request_handler(GenerateSummaryIntentHandler())
+sb.add_request_handler(CrearTareaHandler())
+sb.add_request_handler(CrearMinutaHandler())
+sb.add_request_handler(CrearProyectoHandler())
+sb.add_request_handler(CrearSprintHandler())
+sb.add_request_handler(ConsultarProyectoHandler())
+sb.add_request_handler(ConsultarTareasHandler())
+sb.add_request_handler(ConsultarSprintHandler())
+sb.add_request_handler(ConsultarMinutaHandler())
+sb.add_request_handler(EliminarProyectoHandler())
+sb.add_request_handler(EliminarTareaHandler())
+sb.add_request_handler(EliminarSprintHandler())
+sb.add_request_handler(EliminarMinutaHandler())
+sb.add_request_handler(ActualizarTareaHandler())
 sb.add_request_handler(TranscribeIntentHandler())
 sb.add_request_handler(GenerateSummaryIntentHandler())
 sb.add_request_handler(CrearTareaHandler())
