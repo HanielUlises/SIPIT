@@ -66,9 +66,7 @@ class CrearTareaHandler(AbstractRequestHandler):
             # Verificar si la solicitud fue exitosa y mostrar la respuesta
             if respuesta.status_code == 200:
                 speech_text = "El proyecto se creó con éxito en Notion."
-                speech_text = "El proyecto se creó con éxito en Notion."
             else:
-                speech_text = f"Error {respuesta.status_code}: No se pudo crear el proyecto."
                 speech_text = f"Error {respuesta.status_code}: No se pudo crear el proyecto."
                 
         except Exception as e:
@@ -576,7 +574,6 @@ class TranscribeIntentHandler(AbstractRequestHandler):
     """Maneja TranscribeIntent."""
     def can_handle(self, handler_input):
         return is_intent_name("TranscribeIntent")(handler_input)
-        return is_intent_name("TranscribeIntent")(handler_input)
 
     def handle(self, handler_input):
         global transcriptions
@@ -652,21 +649,6 @@ sb.add_request_handler(ConsultarTareasHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
 sb.add_request_handler(ExitIntentHandler())
-sb.add_request_handler(TranscribeIntentHandler())
-sb.add_request_handler(GenerateSummaryIntentHandler())
-sb.add_request_handler(CrearTareaHandler())
-sb.add_request_handler(CrearMinutaHandler())
-sb.add_request_handler(CrearProyectoHandler())
-sb.add_request_handler(CrearSprintHandler())
-sb.add_request_handler(ConsultarProyectoHandler())
-sb.add_request_handler(ConsultarTareasHandler())
-sb.add_request_handler(ConsultarSprintHandler())
-sb.add_request_handler(ConsultarMinutaHandler())
-sb.add_request_handler(EliminarProyectoHandler())
-sb.add_request_handler(EliminarTareaHandler())
-sb.add_request_handler(EliminarSprintHandler())
-sb.add_request_handler(EliminarMinutaHandler())
-sb.add_request_handler(ActualizarTareaHandler())
 sb.add_request_handler(TranscribeIntentHandler())
 sb.add_request_handler(GenerateSummaryIntentHandler())
 sb.add_request_handler(CrearTareaHandler())
