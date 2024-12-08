@@ -39,6 +39,42 @@ def lambda_handler(event, context):
             "body": "Hubo un error al subir el archivo al bucket S3."
         }
 
+class LaunchRequestHandler(AbstractRequestHandler):
+    """Handler para LaunchRequest de Alexa."""
+    def can_handle(self, handler_input):
+        if handler_input.request_envelope.request is None:
+            logger.error("Request is None")
+            return False
+        return is_request_type("LaunchRequest")(handler_input)
+
+    def handle(self, handler_input):
+        logger.info("In LaunchRequestHandler")
+        speech = "Bienvenido a la Skill de Notion para Alexa. ¿En qué puedo ayudarte?"
+        handler_input.response_builder.speak(speech).set_should_end_session(False)
+        return handler_input.response_builder.response
+
+class HelpIntentHandler(AbstractRequestHandler):
+    """Handler para HelpIntent."""  
+    def can_handle(self, handler_input):
+        return is_intent_name("AMAZON.HelpIntent")(handler_input)
+
+    def handle(self, handler_input):
+        logger.info("In HelpIntentHandler")
+        speech = "Esta es la skill de Notion. Puedes pedirme que consulte o cree páginas."
+        handler_input.response_builder.speak(speech).ask(speech)
+        return handler_input.response_builder.response
+    
+class FallbackIntentHandler(AbstractRequestHandler):
+    """Handler para FallbackIntent."""
+    def can_handle(self, handler_input):
+        return is_intent_name("AMAZON.FallbackIntent")(handler_input)
+
+    def handle(self, handler_input):
+        logger.info("In FallbackIntentHandler")
+        speech = "Lo siento, no puedo ayudarte con eso. Intenta decir otra cosa."
+        handler_input.response_builder.speak(speech).ask(speech)
+        return handler_input.response_builder.response
+
 
 class CrearTareaHandler(AbstractRequestHandler):
     """Handler para crear tareas en Notion."""
@@ -369,46 +405,29 @@ class ActualizarTareaHandler(AbstractRequestHandler):
             speech_text = "Hubo un error al actualizar la tarea. Por favor, inténtalo de nuevo."
 
         return handler_input.response_builder.speak(speech_text).response
-
     
-
-# Handlers de solicitud
-class LaunchRequestHandler(AbstractRequestHandler):
-    """Handler para LaunchRequest de Alexa."""
+class ActualizarProyectoHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        if handler_input.request_envelope.request is None:
-            logger.error("Request is None")
-            return False
-        return is_request_type("LaunchRequest")(handler_input)
-
+        return (is_intent_name("ActualizarProyectoIntent")(handler_input) and
+                handler_input.request_envelope.request.intent.slots.get('texto'))
+    
     def handle(self, handler_input):
-        logger.info("In LaunchRequestHandler")
-        speech = "Bienvenido a la Skill de Notion para Alexa. ¿En qué puedo ayudarte?"
-        handler_input.response_builder.speak(speech).set_should_end_session(False)
-        return handler_input.response_builder.response
+        try:
+            texto = handler_input.request_envelope.request.intent.slots['texto'].value
+            
+            url = "https://sipit-web.onrender.com/actualizarProyecto"
+            headers = {"Content-Type": "text/plain"}
+            
+            respuesta = requests.post(url, data=texto, headers=headers)
+            
+            if respuesta.status_code == 200:
+                speech_text = "El proyecto se actualizó correctamente en Notion."
+            else:
+                speech_text = f"Error {respuesta.status_code}: No se pudo actualizar el proyecto."
 
-class FallbackIntentHandler(AbstractRequestHandler):
-    """Handler para FallbackIntent."""
-    def can_handle(self, handler_input):
-        return is_intent_name("AMAZON.FallbackIntent")(handler_input)
-
-    def handle(self, handler_input):
-        logger.info("In FallbackIntentHandler")
-        speech = "Lo siento, no puedo ayudarte con eso. Intenta decir otra cosa."
-        handler_input.response_builder.speak(speech).ask(speech)
-        return handler_input.response_builder.response
-
-
-class HelpIntentHandler(AbstractRequestHandler):
-    """Handler para HelpIntent."""  
-    def can_handle(self, handler_input):
-        return is_intent_name("AMAZON.HelpIntent")(handler_input)
-
-    def handle(self, handler_input):
-        logger.info("In HelpIntentHandler")
-        speech = "Esta es la skill de Notion. Puedes pedirme que consulte o cree páginas."
-        handler_input.response_builder.speak(speech).ask(speech)
-        return handler_input.response_builder.response
+        except Exception as e:
+            logger.error(f"Error al actualizar el proyecto: {str(e)}")
+            speech_text = "Hubo un error al actualizar el proyecto. Por favor, inténtalo de nuevo."
 
 
 class ExitIntentHandler(AbstractRequestHandler):
