@@ -400,7 +400,7 @@ class FallbackIntentHandler(AbstractRequestHandler):
 
 
 class HelpIntentHandler(AbstractRequestHandler):
-    """Handler para HelpIntent."""
+    """Handler para HelpIntent."""  
     def can_handle(self, handler_input):
         return is_intent_name("AMAZON.HelpIntent")(handler_input)
 

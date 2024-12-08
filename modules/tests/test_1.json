@@ -2,7 +2,7 @@
     "version": "1.0",
     "session": {
       "new": true,
-      "sessionId": "SessionId.12345",
+      "sessionId": "SessionId.67890",
       "application": {
         "applicationId": "amzn1.ask.skill.992f6510-d18f-474f-ac7d-bbe72eefcdec"
       },
@@ -10,24 +10,20 @@
         "userId": "amzn1.ask.account.536697237150"
       }
     },
-    "context": {
-      "System": {
-        "application": {
-          "applicationId": "amzn1.ask.skill.992f6510-d18f-474f-ac7d-bbe72eefcdec"
-        },
-        "user": {
-          "userId": "amzn1.ask.account.536697237150"
-        },
-        "device": {
-          "supportedInterfaces": {}
+    "request": {
+      "type": "IntentRequest",
+      "requestId": "EdwRequestId.67890",
+      "timestamp": "2024-12-07T00:00:00Z",
+      "locale": "es-ES",
+      "intent": {
+        "name": "CrearTareaIntent",
+        "slots": {
+          "texto": {
+            "name": "texto",
+            "value": "Crea una nueva tarea con el nombre carilindo"
+          }
         }
       }
-    },
-    "request": {
-      "type": "LaunchRequest",
-      "requestId": "EdwRequestId.12345",
-      "timestamp": "2024-12-08T02:02:59Z",
-      "locale": "es-ES"
     }
   }
   
