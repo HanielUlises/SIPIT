@@ -16,90 +16,33 @@ from s3_bucket import subirAS3
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def lambda_handler(event, context):
-    # Configuración del bucket y archivo
-    bucket_name = "sipit-transcriptions"  # Cambia esto por el nombre de tu bucket
-    file_path = "/tmp/transcription.txt"  # Ruta del archivo generado en Lambda
-    file_key = "transcriptions/transcription.txt"  # Ruta dentro del bucket
-
-    # Generar un archivo temporal (esto es un ejemplo; tú ya lo tienes generado)
-    with open(file_path, "w") as f:
-        f.write("Este es un archivo generado desde Lambda.")
-
-    # Subir el archivo al bucket
-    resultado = subirAS3(bucket_name, file_path, file_key)
-    if resultado:
-        return {
-            "statusCode": 200,
-            "body": f"Archivo subido exitosamente a {bucket_name}/{file_key}"
-        }
-    else:
-        return {
-            "statusCode": 500,
-            "body": "Hubo un error al subir el archivo al bucket S3."
-        }
-
-class LaunchRequestHandler(AbstractRequestHandler):
-    """Handler para LaunchRequest de Alexa."""
-    def can_handle(self, handler_input):
-        if handler_input.request_envelope.request is None:
-            logger.error("Request is None")
-            return False
-        return is_request_type("LaunchRequest")(handler_input)
-
-    def handle(self, handler_input):
-        logger.info("In LaunchRequestHandler")
-        speech = "Bienvenido a la Skill de Notion para Alexa. ¿En qué puedo ayudarte?"
-        handler_input.response_builder.speak(speech).set_should_end_session(False)
-        return handler_input.response_builder.response
-
-class HelpIntentHandler(AbstractRequestHandler):
-    """Handler para HelpIntent."""  
-    def can_handle(self, handler_input):
-        return is_intent_name("AMAZON.HelpIntent")(handler_input)
-
-    def handle(self, handler_input):
-        logger.info("In HelpIntentHandler")
-        speech = "Esta es la skill de Notion. Puedes pedirme que consulte o cree páginas."
-        handler_input.response_builder.speak(speech).ask(speech)
-        return handler_input.response_builder.response
-    
-class FallbackIntentHandler(AbstractRequestHandler):
-    """Handler para FallbackIntent."""
-    def can_handle(self, handler_input):
-        return is_intent_name("AMAZON.FallbackIntent")(handler_input)
-
-    def handle(self, handler_input):
-        logger.info("In FallbackIntentHandler")
-        speech = "Lo siento, no puedo ayudarte con eso. Intenta decir otra cosa."
-        handler_input.response_builder.speak(speech).ask(speech)
-        return handler_input.response_builder.response
-
-
 class CrearTareaHandler(AbstractRequestHandler):
     """Handler para crear tareas en Notion."""
     def can_handle(self, handler_input):
         return (is_intent_name("CrearTareaIntent")(handler_input) and
-                handler_input.request_envelope.request.intent.slots.get('texto'))
+            handler_input.request_envelope.request.intent.slots.get('texto'))
 
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/comandos"
-            headers = {"Content-Type": "text/plain"}  # Encabezado para indicar que es texto plano
-            data = texto
+            
+            url = "https://sipit-web.onrender.com/comandos/?texto="+texto
     
-            respuesta = requests.post(url, data=data, headers=headers)
-    
+            respuesta = requests.post(url)
+
             # Verificar si la solicitud fue exitosa y mostrar la respuesta
             if respuesta.status_code == 200:
                 speech_text = "El proyecto se creó con éxito en Notion."
             else:
-                speech_text = f"Error {respuesta.status_code}: No se pudo crear el proyecto."
+                for respuest in respuesta :
+                    cuak =f"cuak{respuest}"
+                
+                speech_text = f"Error:  {respuesta.status_code}: No se pudo crear la tarea."+cuak
                 
         except Exception as e:
             logger.error(f"Error al crear tarea: {str(e)}")
-            speech_text = "Hubo un error al crear la tarea. Por favor, inténtalo de nuevo."
+            ab = f"Error al crear tarea: {str(e)}"
+            speech_text = ab+"Hubo un error al crear la tarea. Por favor, inténtalo de nuevo."
 
         return handler_input.response_builder.speak(speech_text).response
 
@@ -113,23 +56,19 @@ class CrearProyectoHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/crearProyecto"
-            headers = {"Content-Type": "text/plain"}
-            data = texto
-
-            respuesta = requests.post(url, data=data, headers=headers)
-
+            respuesta = cN.CrearProyecto(texto)
+            
             if respuesta.status_code == 200:
                 speech_text = "El proyecto se creó con éxito en Notion."
             else:
                 speech_text = f"Error {respuesta.status_code}: No se pudo crear el proyecto."
-
+                
         except Exception as e:
             logger.error(f"Error al crear proyecto: {str(e)}")
             speech_text = "Hubo un error al crear el proyecto. Por favor, inténtalo de nuevo."
 
         return handler_input.response_builder.speak(speech_text).response
-
+    
 class CrearSprintHandler(AbstractRequestHandler):
     """Handler para crear sprints en Notion."""
     def can_handle(self, handler_input):
@@ -139,23 +78,18 @@ class CrearSprintHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/crearSprint"
-            headers = {"Content-Type": "text/plain"}
-            data = texto
-
-            respuesta = requests.post(url, data=data, headers=headers)
-
+            respuesta = cN.crear_tarea(texto)
+            
             if respuesta.status_code == 200:
                 speech_text = "El sprint se creó con éxito en Notion."
             else:
                 speech_text = f"Error {respuesta.status_code}: No se pudo crear el sprint."
-
+                
         except Exception as e:
             logger.error(f"Error al crear sprint: {str(e)}")
             speech_text = "Hubo un error al crear el sprint. Por favor, inténtalo de nuevo."
 
         return handler_input.response_builder.speak(speech_text).response
-
 
 class CrearMinutaHandler(AbstractRequestHandler):
     """Handler para crear minutas en Notion."""
@@ -166,12 +100,8 @@ class CrearMinutaHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/crearMinuta"
-            headers = {"Content-Type": "text/plain"}
-            data = texto
+            respuesta = cN.crear_minuta(texto)
             
-            respuesta = requests.post(url, data=data, headers=headers)
-
             if respuesta.status_code == 200:
                 speech_text = "La minuta se creó con éxito en Notion."
             else:
@@ -192,17 +122,16 @@ class ConsultarTareasHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/consultarTareas"
-            headers = {"Content-Type": "text/plain"}
-            data = texto
-
-            respuesta = requests.post(url, data=data, headers=headers)
-
-            if respuesta.status_code == 200:
-                speech_text = respuesta.text
-            else:
-                speech_text = f"Error {respuesta.status_code}: No se pudo consultar las tareas."
-
+            respuesta = cN.consultar_tareas(texto)
+            
+            speech_text = respuesta
+            # Guardar datos en archivo JSON (opcional)
+            #with open("db.json", "w") as fd:
+            #    json.dump(datos, fd, sort_keys=False, indent=4)
+            #print("Aqui")
+            # Definir el prompt para interpretar las tareas
+                
+                
         except Exception as e:
             logger.error(f"Error al consultar tareas: {str(e)}")
             speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
@@ -210,7 +139,7 @@ class ConsultarTareasHandler(AbstractRequestHandler):
         return handler_input.response_builder.speak(speech_text).response
     
 class ConsultarProyectoHandler(AbstractRequestHandler):
-    """Handler para consultar proyectos en Notion usando REST."""
+    """Handler para consultar proyectos en Notion."""
     def can_handle(self, handler_input):
         return (is_intent_name("ConsultarProyectoIntent")(handler_input) and
                 handler_input.request_envelope.request.intent.slots.get('texto'))
@@ -218,23 +147,18 @@ class ConsultarProyectoHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/consultarProyecto"
-            headers = {"Content-Type": "text/plain"}
+            respuesta = cN.consultar_PROYECTOS(texto)
             
-            respuesta = requests.post(url, data=texto, headers=headers)
-            if respuesta.status_code == 200:
-                speech_text = respuesta.text
-            else:
-                speech_text = "No se pudo consultar el proyecto en este momento. Inténtalo más tarde."
-
+            speech_text = respuesta
+                
         except Exception as e:
-            logger.error(f"Error al consultar proyectos: {str(e)}")
-            speech_text = "Hubo un error al consultar los proyectos. Por favor, inténtalo de nuevo."
-        
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
         return handler_input.response_builder.speak(speech_text).response
     
 class ConsultarSprintHandler(AbstractRequestHandler):
-    """Handler para consultar sprints en Notion usando REST."""
+    """Handler para consultar proyectos en Notion."""
     def can_handle(self, handler_input):
         return (is_intent_name("ConsultarSprintIntent")(handler_input) and
                 handler_input.request_envelope.request.intent.slots.get('texto'))
@@ -242,47 +166,37 @@ class ConsultarSprintHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/consultarSprint"
-            headers = {"Content-Type": "text/plain"}
+            respuesta = cN.consultar_sprints(texto)
             
-            respuesta = requests.post(url, data=texto, headers=headers)
-            if respuesta.status_code == 200:
-                speech_text = respuesta.text
-            else:
-                speech_text = "No se pudo consultar el sprint en este momento. Inténtalo más tarde."
-
+            speech_text = respuesta
+                
         except Exception as e:
-            logger.error(f"Error al consultar sprints: {str(e)}")
-            speech_text = "Hubo un error al consultar los sprints. Por favor, inténtalo de nuevo."
-        
-        return handler_input.response_builder.speak(speech_text).response
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
 
+        return handler_input.response_builder.speak(speech_text).response
+    
 class ConsultarMinutaHandler(AbstractRequestHandler):
-    """Handler para consultar minutas en Notion usando REST."""
+    """Handler para consultar proyectos en Notion."""
     def can_handle(self, handler_input):
-        return (is_intent_name("ConsultarMinutaIntent")(handler_input) and
+        return (is_intent_name("ConsultarSprintIntent")(handler_input) and
                 handler_input.request_envelope.request.intent.slots.get('texto'))
 
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/consultarMinuta"
-            headers = {"Content-Type": "text/plain"}
+            respuesta = cN.consultar_tareas(texto)
             
-            respuesta = requests.post(url, data=texto, headers=headers)
-            if respuesta.status_code == 200:
-                speech_text = respuesta.text
-            else:
-                speech_text = "No se pudo consultar la minuta en este momento. Inténtalo más tarde."
-
+            speech_text = respuesta
+                
         except Exception as e:
-            logger.error(f"Error al consultar minutas: {str(e)}")
-            speech_text = "Hubo un error al consultar las minutas. Por favor, inténtalo de nuevo."
-        
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
         return handler_input.response_builder.speak(speech_text).response
     
 class EliminarProyectoHandler(AbstractRequestHandler):
-    """Handler para eliminar proyectos en Notion usando REST."""
+    """Handler para eliminar proyectos en Notion."""
     def can_handle(self, handler_input):
         return (is_intent_name("EliminarProyectoIntent")(handler_input) and
                 handler_input.request_envelope.request.intent.slots.get('texto'))
@@ -290,23 +204,17 @@ class EliminarProyectoHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/eliminarProyecto"
-            headers = {"Content-Type": "text/plain"}
-            
-            respuesta = requests.post(url, data=texto, headers=headers)
-            if respuesta.status_code == 200:
-                speech_text = "El proyecto se eliminó correctamente."
-            else:
-                speech_text = "No se pudo eliminar el proyecto en este momento. Inténtalo más tarde."
-
+            respuesta = cN.consultar_tareas(texto)
+            speech_text = respuesta
+                
         except Exception as e:
-            logger.error(f"Error al eliminar proyectos: {str(e)}")
-            speech_text = "Hubo un error al eliminar el proyecto. Por favor, inténtalo de nuevo."
-        
-        return handler_input.response_builder.speak(speech_text).response
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
 
+        return handler_input.response_builder.speak(speech_text).response
+    
 class EliminarTareaHandler(AbstractRequestHandler):
-    """Handler para eliminar tareas en Notion usando REST."""
+    """Handler para eliminar proyectos en Notion."""
     def can_handle(self, handler_input):
         return (is_intent_name("EliminarTareaIntent")(handler_input) and
                 handler_input.request_envelope.request.intent.slots.get('texto'))
@@ -314,24 +222,17 @@ class EliminarTareaHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/eliminarTarea"
-            headers = {"Content-Type": "text/plain"}
-            
-            respuesta = requests.post(url, data=texto, headers=headers)
-            if respuesta.status_code == 200:
-                speech_text = "La tarea se eliminó correctamente."
-            else:
-                speech_text = "No se pudo eliminar la tarea en este momento. Inténtalo más tarde."
-
+            respuesta = cN.consultar_tareas(texto)
+            speech_text = respuesta
+                
         except Exception as e:
-            logger.error(f"Error al eliminar tareas: {str(e)}")
-            speech_text = "Hubo un error al eliminar la tarea. Por favor, inténtalo de nuevo."
-        
-        return handler_input.response_builder.speak(speech_text).response
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
 
+        return handler_input.response_builder.speak(speech_text).response
     
 class EliminarMinutaHandler(AbstractRequestHandler):
-    """Handler para eliminar minutas en Notion usando REST."""
+    """Handler para eliminar minuta en Notion."""
     def can_handle(self, handler_input):
         return (is_intent_name("EliminarMinutaIntent")(handler_input) and
                 handler_input.request_envelope.request.intent.slots.get('texto'))
@@ -339,23 +240,17 @@ class EliminarMinutaHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/eliminarMinuta"
-            headers = {"Content-Type": "text/plain"}
-            
-            respuesta = requests.post(url, data=texto, headers=headers)
-            if respuesta.status_code == 200:
-                speech_text = "La minuta se eliminó correctamente."
-            else:
-                speech_text = "No se pudo eliminar la minuta en este momento. Inténtalo más tarde."
-
+            respuesta = cN.consultar_tareas(texto)
+            speech_text = respuesta
+                
         except Exception as e:
-            logger.error(f"Error al eliminar minutas: {str(e)}")
-            speech_text = "Hubo un error al eliminar la minuta. Por favor, inténtalo de nuevo."
-        
+            logger.error(f"Error al consultar tareas: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
+
         return handler_input.response_builder.speak(speech_text).response
     
 class EliminarSprintHandler(AbstractRequestHandler):
-    """Handler para eliminar sprints en Notion usando REST."""
+    """Handler para eliminar sprint en Notion."""
     def can_handle(self, handler_input):
         return (is_intent_name("EliminarSprintIntent")(handler_input) and
                 handler_input.request_envelope.request.intent.slots.get('texto'))
@@ -363,71 +258,76 @@ class EliminarSprintHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            url = "https://sipit-web.onrender.com/eliminarSprint"
-            headers = {"Content-Type": "text/plain"}
-            
-            respuesta = requests.post(url, data=texto, headers=headers)
-            if respuesta.status_code == 200:
-                speech_text = "El sprint se eliminó correctamente."
-            else:
-                speech_text = "No se pudo eliminar el sprint en este momento. Inténtalo más tarde."
-
+            respuesta = cN.consultar_tareas(texto)
+            speech_text = respuesta
+                
         except Exception as e:
-            logger.error(f"Error al eliminar sprints: {str(e)}")
-            speech_text = "Hubo un error al eliminar el sprint. Por favor, inténtalo de nuevo."
-        
-        return handler_input.response_builder.speak(speech_text).response
+            logger.error(f"Error al eliminar sprint: {str(e)}")
+            speech_text = "Hubo un error al consultar las tareas. Por favor, inténtalo de nuevo."
 
+        return handler_input.response_builder.speak(speech_text).response
 
 #este no lo prueben    
 class ActualizarTareaHandler(AbstractRequestHandler):
-    """Handler para actualizar tareas en Notion usando REST."""
+    """Handler para crear minutas en Notion."""
     def can_handle(self, handler_input):
-        return (is_intent_name("ActualizarTareaIntent")(handler_input) and
+        return (is_intent_name("CrearMinutaIntent")(handler_input) and
                 handler_input.request_envelope.request.intent.slots.get('texto'))
 
     def handle(self, handler_input):
         try:
             texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            
-            url = "https://sipit-web.onrender.com/actualizarTarea"
-            headers = {"Content-Type": "text/plain"}
-            
-            respuesta = requests.post(url, data=texto, headers=headers)
+            respuesta = cN.consultar_tareas(texto)
             
             if respuesta.status_code == 200:
-                speech_text = "La tarea se actualizó correctamente en Notion."
+                speech_text = "La minuta se creó con éxito en Notion."
             else:
-                speech_text = f"Error {respuesta.status_code}: No se pudo actualizar la tarea."
-
+                speech_text = f"Error {respuesta.status_code}: No se pudo crear la minuta."
+                
         except Exception as e:
-            logger.error(f"Error al actualizar la tarea: {str(e)}")
-            speech_text = "Hubo un error al actualizar la tarea. Por favor, inténtalo de nuevo."
+            logger.error(f"Error al crear la minuta: {str(e)}")
+            speech_text = "Hubo un error al crear la minuta. Por favor, inténtalo de nuevo."
 
         return handler_input.response_builder.speak(speech_text).response
     
-class ActualizarProyectoHandler(AbstractRequestHandler):
-    def can_handle(self, handler_input):
-        return (is_intent_name("ActualizarProyectoIntent")(handler_input) and
-                handler_input.request_envelope.request.intent.slots.get('texto'))
-    
-    def handle(self, handler_input):
-        try:
-            texto = handler_input.request_envelope.request.intent.slots['texto'].value
-            
-            url = "https://sipit-web.onrender.com/actualizarProyecto"
-            headers = {"Content-Type": "text/plain"}
-            
-            respuesta = requests.post(url, data=texto, headers=headers)
-            
-            if respuesta.status_code == 200:
-                speech_text = "El proyecto se actualizó correctamente en Notion."
-            else:
-                speech_text = f"Error {respuesta.status_code}: No se pudo actualizar el proyecto."
 
-        except Exception as e:
-            logger.error(f"Error al actualizar el proyecto: {str(e)}")
-            speech_text = "Hubo un error al actualizar el proyecto. Por favor, inténtalo de nuevo."
+# Handlers de solicitud
+class LaunchRequestHandler(AbstractRequestHandler):
+    """Handler para LaunchRequest de Alexa."""
+    def can_handle(self, handler_input):
+        if handler_input.request_envelope.request is None:
+            logger.error("Request is None")
+            return False
+        return is_request_type("LaunchRequest")(handler_input)
+
+    def handle(self, handler_input):
+        logger.info("In LaunchRequestHandler")
+        speech = "Bienvenido a la Skill de Notion para Alexa. ¿En qué puedo ayudarte?"
+        handler_input.response_builder.speak(speech).set_should_end_session(False)
+        return handler_input.response_builder.response
+
+class FallbackIntentHandler(AbstractRequestHandler):
+    """Handler para FallbackIntent."""
+    def can_handle(self, handler_input):
+        return is_intent_name("AMAZON.FallbackIntent")(handler_input)
+
+    def handle(self, handler_input):
+        logger.info("In FallbackIntentHandler")
+        speech = "Lo siento, no puedo ayudarte con eso. Intenta decir otra cosa."
+        handler_input.response_builder.speak(speech).ask(speech)
+        return handler_input.response_builder.response
+
+
+class HelpIntentHandler(AbstractRequestHandler):
+    """Handler para HelpIntent."""
+    def can_handle(self, handler_input):
+        return is_intent_name("AMAZON.HelpIntent")(handler_input)
+
+    def handle(self, handler_input):
+        logger.info("In HelpIntentHandler")
+        speech = "Esta es la skill de Notion. Puedes pedirme que consulte o cree páginas."
+        handler_input.response_builder.speak(speech).ask(speech)
+        return handler_input.response_builder.response
 
 
 class ExitIntentHandler(AbstractRequestHandler):
@@ -522,10 +422,33 @@ class GenerateSummaryIntentHandler(AbstractRequestHandler):
             .response
         )
 
+def lambda_handler(event, context):
+    # Configuración del bucket y archivo
+    bucket_name = "sipit-transcriptions"  # Cambia esto por el nombre de tu bucket
+    file_path = "/tmp/transcription.txt"  # Ruta del archivo generado en Lambda
+    file_key = "transcriptions/transcription.txt"  # Ruta dentro del bucket
+
+    # Generar un archivo temporal (esto es un ejemplo; tú ya lo tienes generado)
+    with open(file_path, "w") as f:
+        f.write("Este es un archivo generado desde Lambda.")
+
+    # Subir el archivo al bucket
+    resultado = subirAS3(bucket_name, file_path, file_key)
+    if resultado:
+        return {
+            "statusCode": 200,
+            "body": f"Archivo subido exitosamente a {bucket_name}/{file_key}"
+        }
+    else:
+        return {
+            "statusCode": 500,
+            "body": "Hubo un error al subir el archivo al bucket S3."
+        }
+
 # Configuración de Skill Builder y registro de handlers e interceptores
 sb = SkillBuilder()
-sb.add_request_handler(LaunchRequestHandler())
-sb.add_request_handler(CrearTareaHandler())           
+sb.add_request_handler(CrearTareaHandler())   
+sb.add_request_handler(LaunchRequestHandler()) 
 sb.add_request_handler(CrearProyectoHandler())        
 sb.add_request_handler(CrearSprintHandler())          
 sb.add_request_handler(ConsultarTareasHandler())      

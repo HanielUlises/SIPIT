@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "session": {
+    "new": true,
+    "sessionId": "SessionId.12345",
+    "application": {
+      "applicationId": "amzn1.ask.skill.b8868d1f-234c-4c0e-894e-f0ed9400b9bb"
+    },
+    "user": {
+      "userId": "amzn1.ask.account.536697237150"
+    }
+  },
+  "request": {
+    "type": "IntentRequest",
+    "requestId": "EdwRequestId.12345",
+    "timestamp": "2024-12-08T00:00:00Z",
+    "locale": "es-ES",
+    "intent": {
+      "name": "ComandosNotionIntent",
+      "slots": {
+        "texto": {
+          "name": "texto",
+          "value": "Crea una tarea con nombre: desde amazon 4, que tenga fecha de inicio 10-13-2024 y con una fecha de conclusión 15-12-2024, con un nivel de prioridad Alta, con la descripción Revisar y ajustar los puntos críticos del proyecto, la persona asignada es Sam, y el estado es En curso"
+        }
+      }
+    }
+  }
+}
